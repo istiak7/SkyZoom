@@ -1,54 +1,54 @@
-import { Flight, SearchParams, Airline } from '../types';
-import { AIRLINES } from '../constants';
+import { Flight, SearchParams } from '../types';
 
-// Helper to generate random flight data
-const generateFlights = (params: SearchParams): Promise<Flight[]> => {
-  return new Promise((resolve) => {
-    // Simulate API delay
-    setTimeout(() => {
-      const results: Flight[] = [];
-      const basePrice = 5000 + Math.random() * 5000; 
+const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
+  try {
+    const response = await fetch('https://localhost:7099/api/Search/GetFlightsPrice', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        Origin: params.from.code,
+        Destination: params.to.code,
+        DepartureDate: new Date(params.departureDate).toISOString()
+      })
+    });
 
-      // Generate 15-20 flights
-      const count = 15 + Math.floor(Math.random() * 5);
+    if (!response.ok) {
+      throw new Error(`API Error: ${response.status}`);
+    }
 
-      for (let i = 0; i < count; i++) {
-        const airline = AIRLINES[Math.floor(Math.random() * AIRLINES.length)];
-        const hour = 6 + Math.floor(Math.random() * 16); // 6 AM to 10 PM
-        const minute = Math.floor(Math.random() * 4) * 15;
-        
-        const depDate = new Date(params.departureDate);
-        depDate.setHours(hour, minute, 0);
-        
-        const durationHours = 1 + Math.floor(Math.random() * 3);
-        const arrDate = new Date(depDate);
-        arrDate.setHours(hour + durationHours, minute + 30);
+    const data = await response.json();
+    console.log('API Response:', data);
 
-        // Price variation based on time and airline
-        const priceVariation = Math.random() * 2000 - 1000;
-        const finalPrice = Math.floor(basePrice + priceVariation);
+    if (!data.flightDetails || data.flightDetails.length === 0) return [];
 
-        results.push({
-          id: `FL-${Date.now()}-${i}`,
-          airline,
-          flightNumber: `${airline.name.substring(0, 2).toUpperCase()}${100 + i}`,
-          departureTime: depDate.toISOString(),
-          arrivalTime: arrDate.toISOString(),
-          origin: params.from.code,
-          destination: params.to.code,
-          price: finalPrice,
-          stops: Math.random() > 0.8 ? 1 : 0,
-          duration: `${durationHours}h 30m`
-        });
-      }
+    return data.flightDetails.map((flight: any, index: number) => ({
+      id: `FL-${Date.now()}-${index}`,
+      airline: {
+        name: flight.airlineName || 'Unknown',
+        logo: `https://picsum.photos/seed/${flight.airlineName}/40/40`
+      },
+      flightNumber: `${flight.airlineName?.substring(0, 2).toUpperCase() || 'FL'}${100 + index}`,
+      departureTime: flight.departureTime,
+      arrivalTime: flight.arrivalTime,
+      origin: data.origin,
+      destination: data.destination,
+      price: flight.fareAmount,
+      stops: 0,
+      duration: calculateDuration(flight.departureTime, flight.arrivalTime)
+    })).sort((a: Flight, b: Flight) => a.price - b.price);
+  } catch (error) {
+    console.error('Flight search failed:', error);
+    return [];
+  }
+};
 
-      // Sort by price by default
-      results.sort((a, b) => a.price - b.price);
-      resolve(results);
-    }, 1500);
-  });
+const calculateDuration = (departure: string, arrival: string): string => {
+  const diff = new Date(arrival).getTime() - new Date(departure).getTime();
+  const hours = Math.floor(diff / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  return `${hours}h ${minutes}m`;
 };
 
 export const flightService = {
-  search: generateFlights
+  search: searchFlights
 };
