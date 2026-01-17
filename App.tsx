@@ -60,8 +60,8 @@ const App: React.FC = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4 text-center pb-20">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 drop-shadow-lg">Flight, Hotel, Holiday, Visa & eSIM</h1>
-            <p className="text-lg md:text-xl font-light opacity-90 drop-shadow-md">at your fingertips</p>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 drop-shadow-lg">Fly Smarter, Travel Better</h1>
+            <p className="text-lg md:text-xl font-light opacity-90 drop-shadow-md">Book your flights effortlessly. Explore destinations, compare prices, and travel smarter with SkyZone</p>
         </div>
       </div>
 
