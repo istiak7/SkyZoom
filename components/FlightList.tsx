@@ -48,33 +48,38 @@ const FlightList: React.FC<FlightListProps> = ({ flights, loading }) => {
                 <img src={flight.airline.logo} alt={flight.airline.name} className="w-10 h-10 rounded-full object-cover bg-gray-50" />
                 <div>
                   <p className="font-bold text-gray-800 text-sm">{flight.airline.name}</p>
-                  <p className="text-xs text-gray-400">{flight.flightNumber}</p>
+                  {/* <p className="text-xs text-gray-400">{flight.flightNumber}</p> */}
                 </div>
               </div>
               
               <div className="flex-1 flex flex-col items-center px-4">
-                <p className="text-xs text-gray-400 mb-1">{flight.duration}</p>
+                {/* <p className="text-xs text-gray-400 mb-1">{flight.duration}</p> */}
                 <div className="w-full flex items-center">
                   <div className="h-[2px] bg-gray-200 flex-1"></div>
                   <div className="text-gray-300">✈</div>
                   <div className="h-[2px] bg-gray-200 flex-1"></div>
                 </div>
-                <p className="text-xs text-rose-500 mt-1">{flight.stops === 0 ? 'Non-stop' : `${flight.stops} Stop`}</p>
+                {/* <p className="text-xs text-rose-500 mt-1">{flight.stops === 0 ? 'Non-stop' : `${flight.stops} Stop`}</p> */}
               </div>
 
-              <div className="text-center">
+              <div className="w-full md:w-1/4 flex flex-col items-end border-t md:border-t-0 border-dashed border-gray-200 pt-4 md:pt-0 md:pl-6 mt-4 md:mt-0">
+               <p className="text-xs text-gray-400 mb-1">Price per person</p>
+               <p className="text-2xl font-bold text-rose-600 mb-2">BDT {flight.price.toLocaleString()}</p>
+            
+              </div>
+              {/* <div className="text-center">
                 <p className="font-bold text-lg text-gray-800">
                     {new Date(flight.arrivalTime).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                 </p>
                 <p className="text-xs text-gray-500">{flight.destination}</p>
-              </div>
+              </div> */}
             </div>
 
             {/* Price */}
-            <div className="w-full md:w-1/4 flex flex-col items-end border-t md:border-t-0 md:border-l border-dashed border-gray-200 pt-4 md:pt-0 md:pl-6 mt-4 md:mt-0">
+            {/* <div className="w-full md:w-1/4 flex flex-col items-end border-t md:border-t-0 md:border-l border-dashed border-gray-200 pt-4 md:pt-0 md:pl-6 mt-4 md:mt-0">
                <p className="text-xs text-gray-400 mb-1">Price per person</p>
                <p className="text-2xl font-bold text-rose-600 mb-2">BDT {flight.price.toLocaleString()}</p>
-            </div>
+            </div> */}
           </div>
         </div>
       ))}

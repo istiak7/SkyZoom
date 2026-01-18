@@ -29,16 +29,24 @@ const AIRLINE_COLORS: Record<string, string> = {
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
-    const airlineName = payload[0].name;
-    const price = payload[0].value;
+    // Filter to only show airlines that have data (non-null values) at this point
+    const activePayloads = payload.filter((p: any) => p.value !== null && p.value !== undefined);
+
+    if (activePayloads.length === 0) return null;
 
     return (
-      <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-100 min-w-[140px]">
-        <p className="text-gray-500 text-xs font-semibold mb-1">{data.dateTime}</p>
-        <p className="font-bold text-gray-800 text-sm mb-1">{airlineName}</p>
-        <p className="text-base font-bold text-rose-600">
-          BDT {price?.toLocaleString()}
-        </p>
+      <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-100 min-w-[160px]">
+        <p className="text-gray-500 text-xs font-semibold mb-2">{data.fullDateTime}</p>
+        {activePayloads.map((item: any, index: number) => (
+          <div key={item.name} className={index > 0 ? 'mt-2 pt-2 border-t border-gray-100' : ''}>
+            <p className="font-bold text-sm mb-1" style={{ color: item.stroke }}>
+              {item.name}
+            </p>
+            <p className="text-base font-bold text-rose-600">
+              BDT {item.value?.toLocaleString()}
+            </p>
+          </div>
+        ))}
       </div>
     );
   }
@@ -49,29 +57,42 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
   if (!flights || flights.length === 0) return null;
 
   try {
-    const dataByDateTime = flights.reduce((acc, flight) => {
-      const dateObj = new Date(flight.departureTime);
-      const date = dateObj.toLocaleDateString();
-      const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-      const key = `${date} ${time}`;
-      const sortKey = dateObj.getTime();
+    const timeMap = new Map<string, any>();
+    
+    flights.forEach(flight => {
+      const depTime = flight.departureTime;
+      const [datePart, timePart] = depTime.split('T');
+      const [year, month, day] = datePart.split('-');
       
-      if (!acc[key]) {
-        acc[key] = { dateTime: key, sortKey };
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const monthName = monthNames[parseInt(month) - 1];
+      
+      const [hour, minute] = timePart.split(':');
+      const hourNum = parseInt(hour);
+      const ampm = hourNum >= 12 ? 'PM' : 'AM';
+      const hour12 = hourNum % 12 || 12;
+      const time = `${hour12.toString().padStart(2, '0')}:${minute} ${ampm}`;
+      
+      const date = `${monthName} ${parseInt(day)}, ${year}`;
+      const fullDateTime = `${monthName} ${parseInt(day)}, ${year} ${time}`;
+      const sortKey = new Date(depTime).getTime();
+      
+      if (!timeMap.has(depTime)) {
+        timeMap.set(depTime, { dateTime: time, date, sortKey, fullDateTime });
       }
-      acc[key][flight.airline.name] = flight.price;
       
-      return acc;
-    }, {} as Record<string, any>);
+      const timeData = timeMap.get(depTime);
+      timeData[flight.airline.name] = flight.price;
+    });
 
-    const chartData = Object.values(dataByDateTime).sort((a: any, b: any) => a.sortKey - b.sortKey);
+    const chartData = Array.from(timeMap.values()).sort((a: any, b: any) => a.sortKey - b.sortKey);
     const airlines = [...new Set(flights.map(f => f.airline.name))];
     const allPrices = flights.map(f => f.price);
     const minPrice = Math.floor(Math.min(...allPrices) / 1000) * 1000;
     const maxPrice = Math.ceil(Math.max(...allPrices) / 1000) * 1000;
 
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8 focus:outline-none" tabIndex={-1}>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-lg font-bold text-gray-800">Price Trend by Airline</h3>
@@ -79,15 +100,23 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
           </div>
         </div>
         
-        <div className="h-[400px] w-full">
+        <div className="h-[450px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData} margin={{ top: 10, right: 30, bottom: 60, left: 20 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+            <LineChart data={chartData} margin={{ top: 10, right: 30, bottom: 80, left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
               <XAxis 
                   dataKey="dateTime" 
-                  tick={{ fontSize: 13, fill: '#1f2937', fontWeight: 600 }} 
-                  angle={-45}
-                  textAnchor="end"
+                  tick={{ fontSize: 12, fill: '#1f2937', fontWeight: 500 }} 
+                  height={70}
+              />
+              <XAxis 
+                  dataKey="date"
+                  axisLine={false}
+                  tickLine={false}
+                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  xAxisId="date"
+                  height={70}
+                  dy={20}
               />
               <YAxis 
                   domain={[minPrice, maxPrice]} 

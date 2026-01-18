@@ -25,10 +25,13 @@ const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
     }
 
     const mappedFlights = data.map((flight: any, index: number) => {
-      console.log('Processing flight:', flight);
+      console.log('Raw API flight data:', flight);
       const depDate = flight.departureDate;
       const depTime = flight.departureTime.split(' ')[1];
       const schTime = flight.scheduleTime.split(' ')[1];
+      
+      const departureDateTime = `${depDate}T${depTime}:00`;
+      console.log('Constructed departureDateTime:', departureDateTime);
       
       const mapped = {
         id: `${flight.airlineCode}-${flight.flightNumber}-${index}`,
@@ -37,7 +40,7 @@ const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
           logo: `https://picsum.photos/seed/${flight.airlineCode}/40/40`
         },
         flightNumber: flight.flightNumber,
-        departureTime: `${depDate}T${depTime}:00`,
+        departureTime: departureDateTime,
         arrivalTime: `${depDate}T${schTime}:00`,
         origin: params.from.code,
         destination: params.to.code,
