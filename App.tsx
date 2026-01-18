@@ -23,7 +23,6 @@ const App: React.FC = () => {
   const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [sortOrder, setSortOrder] = useState<'price-asc' | 'price-desc'>('price-asc');
 
   // Automatically load some flights on mount for demonstration
   useEffect(() => {
@@ -45,11 +44,7 @@ const App: React.FC = () => {
   };
 
   // Sort flights based on current sortOrder
-  const sortedFlights = [...flights].sort((a, b) => {
-    if (sortOrder === 'price-asc') return a.price - b.price;
-    if (sortOrder === 'price-desc') return b.price - a.price;
-    return 0;
-  });
+  const sortedFlights = [...flights].sort((a, b) => a.price - b.price);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -76,45 +71,12 @@ const App: React.FC = () => {
         <SearchForm onSearch={handleSearch} initialParams={initialSearchParams} />
 
         {/* Results Section */}
-        <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className="mt-8">
+            {searched && !loading && sortedFlights.length > 0 && (
+                <PriceGraph flights={sortedFlights} />
+            )}
             
-            {/* Left Sidebar */}
-            <div className="hidden lg:block lg:col-span-3 space-y-6">
-                <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm sticky top-24">
-                    <h3 className="font-bold text-gray-800 mb-4">Sort By Price</h3>
-                    <div className="space-y-3">
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <input
-                                type="radio"
-                                name="sort"
-                                checked={sortOrder === 'price-asc'}
-                                onChange={() => setSortOrder('price-asc')}
-                                className="w-4 h-4"
-                            />
-                            <span className="text-gray-700">Low to High</span>
-                        </label>
-                        <label className="flex items-center gap-3 cursor-pointer group">
-                            <input
-                                type="radio"
-                                name="sort"
-                                checked={sortOrder === 'price-desc'}
-                                onChange={() => setSortOrder('price-desc')}
-                                className="w-4 h-4"
-                            />
-                            <span className="text-gray-700">High to Low</span>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            {/* Right Content (Graph & List) */}
-            <div className="lg:col-span-9">
-                {searched && !loading && sortedFlights.length > 0 && (
-                    <PriceGraph flights={sortedFlights} />
-                )}
-                
-                <FlightList flights={sortedFlights} loading={loading} />
-            </div>
+            <FlightList flights={sortedFlights} loading={loading} />
         </div>
       </main>
 

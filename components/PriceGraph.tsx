@@ -92,7 +92,7 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
     const maxPrice = Math.ceil(Math.max(...allPrices) / 1000) * 1000;
 
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8 focus:outline-none" tabIndex={-1}>
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-lg font-bold text-gray-800">Price Trend by Airline</h3>
