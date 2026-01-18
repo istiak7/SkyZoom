@@ -11,7 +11,7 @@ const Navbar: React.FC = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
               </svg>
             </div>
-            <span className="font-bold text-xl text-gray-800 tracking-tight">SkyZoom</span>
+            <span className="font-bold text-xl text-gray-800 tracking-tight">FareComparison</span>
           </div>
         </div>
       </div>

@@ -16,30 +16,28 @@ interface PriceGraphProps {
 }
 
 const AIRLINE_COLORS: Record<string, string> = {
-  'Novoair': '#ef4444',       // Red
-  'US-Bangla': '#3b82f6',     // Blue
-  'Air Astra': '#22c55e',     // Green
-  'Biman Bangladesh': '#059669', // Emerald
-  'Emirates': '#d97706',      // Amber
-  'Singapore Air': '#7c3aed'  // Violet
+  'US-Bangla Airlines': '#3b82f6',
+  'Thai Airways': '#ef4444',
+  'Bangkok Airways': '#22c55e',
+  'Novoair': '#f59e0b',
+  'Biman Bangladesh': '#8b5cf6',
+  'Air Astra': '#ec4899',
+  'Emirates': '#d97706',
+  'Singapore Air': '#7c3aed'
 };
 
-// Custom Tooltip to show Time, Airline, and Price without altering graph design
-const CustomTooltip = ({ active, payload, label }: any) => {
+const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     const airlineName = payload[0].name;
-    const color = payload[0].color;
+    const price = payload[0].value;
 
     return (
       <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-100 min-w-[140px]">
-        <p className="text-gray-500 text-xs font-semibold mb-1">{data.timeLabel}</p>
-        <div className="flex items-center gap-2 mb-1">
-           <div className="w-2 h-2 rounded-full" style={{ backgroundColor: color }}></div>
-           <p className="font-bold text-gray-800 text-sm">{airlineName}</p>
-        </div>
+        <p className="text-gray-500 text-xs font-semibold mb-1">{data.dateTime}</p>
+        <p className="font-bold text-gray-800 text-sm mb-1">{airlineName}</p>
         <p className="text-base font-bold text-rose-600">
-          BDT {data.price.toLocaleString()}
+          BDT {price?.toLocaleString()}
         </p>
       </div>
     );
@@ -48,92 +46,83 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
-  // Group flights by airline
-  const flightsByAirline = flights.reduce((acc, flight) => {
-    const name = flight.airline.name;
-    if (!acc[name]) {
-      acc[name] = [];
-    }
-    acc[name].push({
-      timestamp: new Date(flight.departureTime).getTime(),
-      price: flight.price,
-      flightNum: flight.flightNumber,
-      timeLabel: new Date(flight.departureTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    });
-    return acc;
-  }, {} as Record<string, any[]>);
+  if (!flights || flights.length === 0) return null;
 
-  // Sort points in each group by time
-  Object.keys(flightsByAirline).forEach(key => {
-    flightsByAirline[key].sort((a, b) => a.timestamp - b.timestamp);
-  });
+  try {
+    const dataByDateTime = flights.reduce((acc, flight) => {
+      const dateObj = new Date(flight.departureTime);
+      const date = dateObj.toLocaleDateString();
+      const time = dateObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+      const key = `${date} ${time}`;
+      const sortKey = dateObj.getTime();
+      
+      if (!acc[key]) {
+        acc[key] = { dateTime: key, sortKey };
+      }
+      acc[key][flight.airline.name] = flight.price;
+      
+      return acc;
+    }, {} as Record<string, any>);
 
-  // Calculate overall min/max for axes to ensure all lines fit
-  const allPrices = flights.map(f => f.price);
-  const minPrice = allPrices.length > 0 ? Math.min(...allPrices) : 0;
-  const maxPrice = allPrices.length > 0 ? Math.max(...allPrices) : 10000;
-  
-  const allTimestamps = flights.map(f => new Date(f.departureTime).getTime());
-  const minTime = allTimestamps.length > 0 ? Math.min(...allTimestamps) : Date.now();
-  const maxTime = allTimestamps.length > 0 ? Math.max(...allTimestamps) : Date.now();
+    const chartData = Object.values(dataByDateTime).sort((a: any, b: any) => a.sortKey - b.sortKey);
+    const airlines = [...new Set(flights.map(f => f.airline.name))];
+    const allPrices = flights.map(f => f.price);
+    const minPrice = Math.floor(Math.min(...allPrices) / 1000) * 1000;
+    const maxPrice = Math.ceil(Math.max(...allPrices) / 1000) * 1000;
 
-  // Time formatter for X Axis
-  const formatTime = (time: number) => new Date(time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-  return (
-    <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
-      <div className="flex justify-between items-center mb-6">
-        <div>
-          <h3 className="text-lg font-bold text-gray-800">Price Trend by Airline</h3>
-          <p className="text-sm text-gray-500">Compare ticket prices across different airlines over time</p>
+    return (
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+        <div className="flex justify-between items-center mb-6">
+          <div>
+            <h3 className="text-lg font-bold text-gray-800">Price Trend by Airline</h3>
+            <p className="text-sm text-gray-500">Compare ticket prices across different airlines over time</p>
+          </div>
+        </div>
+        
+        <div className="h-[400px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <LineChart data={chartData} margin={{ top: 10, right: 30, bottom: 60, left: 20 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" />
+              <XAxis 
+                  dataKey="dateTime" 
+                  tick={{ fontSize: 13, fill: '#1f2937', fontWeight: 600 }} 
+                  angle={-45}
+                  textAnchor="end"
+              />
+              <YAxis 
+                  domain={[minPrice, maxPrice]} 
+                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  tickFormatter={(value) => `৳${(value/1000).toFixed(0)}k`}
+              />
+              <Tooltip content={<CustomTooltip />} />
+              <Legend 
+                wrapperStyle={{ fontSize: '13px', paddingTop: '10px', position: 'relative', top: '-20px' }} 
+                iconType="line" 
+                verticalAlign="top"
+              />
+              
+              {airlines.map((airline: string) => (
+                <Line 
+                  key={airline}
+                  type="monotone" 
+                  dataKey={airline} 
+                  name={airline}
+                  stroke={AIRLINE_COLORS[airline] || '#6b7280'} 
+                  strokeWidth={3} 
+                  dot={{ r: 5, fill: AIRLINE_COLORS[airline] || '#6b7280' }}
+                  activeDot={{ r: 7 }}
+                  connectNulls
+                />
+              ))}
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
-      
-      <div className="h-[300px] w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <LineChart margin={{ top: 10, right: 30, bottom: 5, left: 10 }}>
-            <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-            <XAxis 
-                dataKey="timestamp" 
-                type="number" 
-                domain={[minTime - 3600000, maxTime + 3600000]} // Add 1 hour padding
-                tickFormatter={formatTime}
-                tick={{ fontSize: 11, fill: '#9ca3af' }} 
-                axisLine={false}
-                tickLine={false}
-                scale="time"
-            />
-            <YAxis 
-                domain={[minPrice - 1000, maxPrice + 1000]} 
-                tick={{ fontSize: 11, fill: '#9ca3af' }}
-                axisLine={false}
-                tickLine={false}
-                tickFormatter={(value) => `৳${value/1000}k`}
-            />
-            
-            <Tooltip content={<CustomTooltip />} />
-            
-            <Legend wrapperStyle={{ fontSize: '12px', paddingTop: '10px' }} iconType="circle" />
-            
-            {Object.entries(flightsByAirline).map(([airline, data]) => (
-              <Line 
-                key={airline}
-                data={data}
-                type="linear" 
-                dataKey="price" 
-                name={airline}
-                stroke={AIRLINE_COLORS[airline] || '#6b7280'} 
-                strokeWidth={2} 
-                dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: AIRLINE_COLORS[airline] || '#6b7280' }}
-                activeDot={{ r: 6 }}
-                connectNulls={false}
-              />
-            ))}
-          </LineChart>
-        </ResponsiveContainer>
-      </div>
-    </div>
-  );
+    );
+  } catch (error) {
+    console.error('Graph error:', error);
+    return null;
+  }
 };
 
 export default PriceGraph;

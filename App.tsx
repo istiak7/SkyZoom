@@ -9,9 +9,11 @@ import { AIRPORTS } from './constants';
 
 // Default initial state for the form
 const initialSearchParams: SearchParams = {
+  airlines: [],
   from: AIRPORTS[0], // Dhaka
   to: AIRPORTS[1],   // Cox's Bazar
-  departureDate: new Date().toISOString().split('T')[0],
+  startDate: new Date().toISOString().split('T')[0],
+  endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   tripType: 'one-way',
   passengers: 1,
   class: 'economy'
@@ -21,7 +23,7 @@ const App: React.FC = () => {
   const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
-  const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [sortOrder, setSortOrder] = useState<'price-asc' | 'price-desc'>('price-asc');
 
   // Automatically load some flights on mount for demonstration
   useEffect(() => {
@@ -44,7 +46,9 @@ const App: React.FC = () => {
 
   // Sort flights based on current sortOrder
   const sortedFlights = [...flights].sort((a, b) => {
-    return sortOrder === 'asc' ? a.price - b.price : b.price - a.price;
+    if (sortOrder === 'price-asc') return a.price - b.price;
+    if (sortOrder === 'price-desc') return b.price - a.price;
+    return 0;
   });
 
   return (
@@ -60,7 +64,7 @@ const App: React.FC = () => {
         />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30" />
         <div className="absolute inset-0 flex flex-col items-center justify-center text-white px-4 text-center pb-20">
-            <h1 className="text-3xl md:text-4xl font-bold mb-3 drop-shadow-lg">Flight, Hotel, Holiday, Visa & eSIM</h1>
+            <h1 className="text-3xl md:text-4xl font-bold mb-3 drop-shadow-lg">Flight Price Comparison</h1>
             <p className="text-lg md:text-xl font-light opacity-90 drop-shadow-md">at your fingertips</p>
         </div>
       </div>
@@ -74,36 +78,30 @@ const App: React.FC = () => {
         {/* Results Section */}
         <div className="mt-8 grid grid-cols-1 lg:grid-cols-12 gap-8">
             
-            {/* Left Sidebar (Simple Sort) */}
+            {/* Left Sidebar */}
             <div className="hidden lg:block lg:col-span-3 space-y-6">
                 <div className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm sticky top-24">
                     <h3 className="font-bold text-gray-800 mb-4">Sort By Price</h3>
                     <div className="space-y-3">
                         <label className="flex items-center gap-3 cursor-pointer group">
-                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${sortOrder === 'asc' ? 'border-rose-600' : 'border-gray-300 group-hover:border-rose-400'}`}>
-                                {sortOrder === 'asc' && <div className="w-2.5 h-2.5 rounded-full bg-rose-600" />}
-                            </div>
                             <input
                                 type="radio"
                                 name="sort"
-                                className="hidden"
-                                checked={sortOrder === 'asc'}
-                                onChange={() => setSortOrder('asc')}
+                                checked={sortOrder === 'price-asc'}
+                                onChange={() => setSortOrder('price-asc')}
+                                className="w-4 h-4"
                             />
-                            <span className="text-gray-700 group-hover:text-gray-900">Low to High</span>
+                            <span className="text-gray-700">Low to High</span>
                         </label>
                         <label className="flex items-center gap-3 cursor-pointer group">
-                             <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-colors ${sortOrder === 'desc' ? 'border-rose-600' : 'border-gray-300 group-hover:border-rose-400'}`}>
-                                {sortOrder === 'desc' && <div className="w-2.5 h-2.5 rounded-full bg-rose-600" />}
-                            </div>
                             <input
                                 type="radio"
                                 name="sort"
-                                className="hidden"
-                                checked={sortOrder === 'desc'}
-                                onChange={() => setSortOrder('desc')}
+                                checked={sortOrder === 'price-desc'}
+                                onChange={() => setSortOrder('price-desc')}
+                                className="w-4 h-4"
                             />
-                            <span className="text-gray-700 group-hover:text-gray-900">High to Low</span>
+                            <span className="text-gray-700">High to Low</span>
                         </label>
                     </div>
                 </div>
@@ -123,7 +121,7 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-12 mt-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="text-gray-400 text-sm">© 2024 SkyZoom Travels. All rights reserved.</p>
+            <p className="text-gray-400 text-sm">© 2024 FareComparison. All rights reserved.</p>
         </div>
       </footer>
     </div>

@@ -8,6 +8,7 @@ export const AIRPORTS: Airport[] = [
   { code: 'DXB', city: 'Dubai', name: 'Dubai Intl' },
   { code: 'SIN', city: 'Singapore', name: 'Changi Airport' },
   { code: 'BKK', city: 'Bangkok', name: 'Suvarnabhumi Airport' },
+  {code:'DOH', city:'Doha', name:'Hamad Intl' }
 ];
 
 export const AIRLINES: Airline[] = [
@@ -17,4 +18,10 @@ export const AIRLINES: Airline[] = [
   { name: 'Air Astra', logo: 'https://picsum.photos/seed/astra/40/40' },
   { name: 'Emirates', logo: 'https://picsum.photos/seed/emirates/40/40' },
   { name: 'Singapore Air', logo: 'https://picsum.photos/seed/singapore/40/40' },
+];
+
+export const AIRLINE_OPTIONS = [
+  { code: 'BS', name: 'US-Bangla Airlines' },
+  { code: 'TG', name: 'Thai Airways' },
+  { code: 'PG', name: 'Bangkok Airways' },
 ];

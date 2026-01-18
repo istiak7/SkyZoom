@@ -23,10 +23,11 @@ export interface Flight {
 }
 
 export interface SearchParams {
+  airlines: string[];
   from: Airport;
   to: Airport;
-  departureDate: string;
-  returnDate?: string;
+  startDate: string;
+  endDate: string;
   tripType: 'one-way' | 'round-trip' | 'multi-city';
   passengers: number;
   class: 'economy' | 'business' | 'first';
