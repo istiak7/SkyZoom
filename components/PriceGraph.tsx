@@ -21,32 +21,85 @@ const AIRLINE_COLORS: Record<string, string> = {
   'Bangkok Airways': '#22c55e',
   'Novoair': '#f59e0b',
   'Biman Bangladesh': '#8b5cf6',
-  'Air Astra': '#ec4899',
-  'Emirates': '#d97706',
-  'Singapore Air': '#7c3aed'
+  'Air Astra': '#9f798c',
+  'Emirates': '#06b6d9',
+  'Singapore Air': '#ed3acc'
 };
 
 const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
-    const data = payload[0].payload;
-    // Filter to only show airlines that have data (non-null values) at this point
-    const activePayloads = payload.filter((p: any) => p.value !== null && p.value !== undefined);
-
-    if (activePayloads.length === 0) return null;
-
-    return (
-      <div className="bg-white p-3 rounded-lg shadow-lg border border-gray-100 min-w-[160px]">
-        <p className="text-gray-500 text-xs font-semibold mb-2">{data.fullDateTime}</p>
-        {activePayloads.map((item: any, index: number) => (
-          <div key={item.name} className={index > 0 ? 'mt-2 pt-2 border-t border-gray-100' : ''}>
-            <p className="font-bold text-sm mb-1" style={{ color: item.stroke }}>
-              {item.name}
-            </p>
-            <p className="text-base font-bold text-rose-600">
-              BDT {item.value?.toLocaleString()}
-            </p>
+    const pointData = payload[0].payload;
+    
+    const allFlights: Array<{ airlineName: string; color: string; price: number }> = [];
+    
+    payload.forEach((entry: any) => {
+      const airlineName = entry.name;
+      const color = entry.color;
+      const flights = pointData.flights[airlineName];
+      
+      if (flights && flights.length > 0) {
+        flights.forEach((f: any) => {
+          allFlights.push({ airlineName, color, price: f.price });
+        });
+      }
+    });
+    
+    if (allFlights.length === 0) return null;
+    
+    allFlights.sort((a, b) => a.price - b.price);
+    
+    if (allFlights.length === 1) {
+      const { airlineName, price, color } = allFlights[0];
+      return (
+        <div className="bg-white rounded-xl shadow-xl border border-gray-100 p-4 min-w-[220px]">
+          <div className="text-gray-500 text-xs font-semibold mb-2">
+            {pointData.formattedDate} {pointData.formattedTime}
           </div>
-        ))}
+          <div className="text-gray-900 font-bold text-base mb-2" style={{ color }}>
+            {airlineName}
+          </div>
+          <div className="text-2xl font-extrabold text-gray-900">
+            BDT {price.toLocaleString()}
+          </div>
+        </div>
+      );
+    }
+    
+    return (
+      <div className="bg-white rounded-xl shadow-xl border border-gray-100 min-w-[280px] overflow-hidden">
+        <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+          <div className="text-gray-900 font-bold text-sm">
+            {pointData.formattedDate}
+          </div>
+          <div className="text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
+            {pointData.formattedTime}
+          </div>
+        </div>
+        
+        <div className="p-3 space-y-3 max-h-[400px] overflow-y-auto">
+          {Array.from(new Set(allFlights.map(f => f.airlineName))).map((airlineName, idx) => {
+            const airlineFlights = allFlights.filter(f => f.airlineName === airlineName);
+            const color = airlineFlights[0].color;
+            
+            return (
+              <div key={idx} className={`${idx !== 0 ? 'pt-3 border-t border-dashed border-gray-100' : ''}`}>
+                <div className="flex items-center gap-2 mb-2">
+                  <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                  <span className="text-sm font-bold text-gray-700">
+                    {airlineName}
+                  </span>
+                </div>
+                <div className="space-y-1 pl-5">
+                  {airlineFlights.map((item, i) => (
+                    <div key={i} className="flex justify-between items-center text-sm">
+                      <span className="font-bold text-gray-900">BDT {item.price.toLocaleString()}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
     );
   }
@@ -74,25 +127,41 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
       const time = `${hour12.toString().padStart(2, '0')}:${minute} ${ampm}`;
       
       const date = `${monthName} ${parseInt(day)}, ${year}`;
-      const fullDateTime = `${monthName} ${parseInt(day)}, ${year} ${time}`;
-      const sortKey = new Date(depTime).getTime();
+      const timestamp = new Date(depTime).getTime();
+      const key = `${datePart}-${timePart}`;
       
-      if (!timeMap.has(depTime)) {
-        timeMap.set(depTime, { dateTime: time, date, sortKey, fullDateTime });
+      if (!timeMap.has(key)) {
+        timeMap.set(key, {
+          timestamp,
+          formattedDate: date,
+          formattedTime: time,
+          flights: {}
+        });
       }
       
-      const timeData = timeMap.get(depTime);
-      timeData[flight.airline.name] = flight.price;
+      const point = timeMap.get(key);
+      const airlineName = flight.airline.name;
+      
+      if (!point.flights[airlineName]) {
+        point.flights[airlineName] = [];
+      }
+      
+      point.flights[airlineName].push({
+        time,
+        price: flight.price
+      });
+      
+      point[airlineName] = flight.price;
     });
-
-    const chartData = Array.from(timeMap.values()).sort((a: any, b: any) => a.sortKey - b.sortKey);
+    
+    const chartData = Array.from(timeMap.values()).sort((a, b) => a.timestamp - b.timestamp);
     const airlines = [...new Set(flights.map(f => f.airline.name))];
     const allPrices = flights.map(f => f.price);
     const minPrice = Math.floor(Math.min(...allPrices) / 1000) * 1000;
     const maxPrice = Math.ceil(Math.max(...allPrices) / 1000) * 1000;
 
     return (
-      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8">
+      <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8 focus:outline-none" tabIndex={-1}>
         <div className="flex justify-between items-center mb-6">
           <div>
             <h3 className="text-lg font-bold text-gray-800">Price Trend by Airline</h3>
@@ -100,23 +169,46 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
           </div>
         </div>
         
-        <div className="h-[450px] w-full">
+        <div className="h-[600px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData} margin={{ top: 10, right: 30, bottom: 80, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
               <XAxis 
-                  dataKey="dateTime" 
-                  tick={{ fontSize: 12, fill: '#1f2937', fontWeight: 500 }} 
+                  dataKey="timestamp"
+                  type="number"
+                  scale="time"
+                  domain={['dataMin', 'dataMax']}
+                  ticks={chartData.map(d => d.timestamp)}
+                  tickFormatter={(timestamp) => {
+                    const d = new Date(timestamp);
+                    const hour = d.getHours();
+                    const minute = d.getMinutes();
+                    const ampm = hour >= 12 ? 'PM' : 'AM';
+                    const hour12 = hour % 12 || 12;
+                    return `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
+                  }}
+                  tick={{ fontSize: 12, fill: '#111827', fontWeight: 600 }}
                   height={70}
+                  minTickGap={50}
               />
               <XAxis 
-                  dataKey="date"
+                  dataKey="timestamp"
+                  type="number"
+                  scale="time"
+                  domain={['dataMin', 'dataMax']}
+                  ticks={chartData.map(d => d.timestamp)}
+                  tickFormatter={(timestamp) => {
+                    const d = new Date(timestamp);
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+                  }}
                   axisLine={false}
                   tickLine={false}
-                  tick={{ fontSize: 11, fill: '#6b7280' }}
+                  tick={{ fontSize: 12, fill: '#6b7280', fontWeight: 500 }}
                   xAxisId="date"
                   height={70}
-                  dy={20}
+                  dy={35}
+                  minTickGap={50}
               />
               <YAxis 
                   domain={[minPrice, maxPrice]} 
