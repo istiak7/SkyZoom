@@ -83,7 +83,7 @@ const App: React.FC = () => {
       {/* Footer */}
       <footer className="bg-white border-t border-gray-200 py-12 mt-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
-            <p className="text-gray-400 text-sm">© 2024 FareComparison. All rights reserved.</p>
+            <p className="text-gray-400 text-sm">© 2026 FareComparison. All rights reserved.</p>
         </div>
       </footer>
     </div>

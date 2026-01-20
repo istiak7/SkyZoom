@@ -10,6 +10,23 @@ interface SearchFormProps {
 const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
   const [params, setParams] = useState<SearchParams>(initialParams);
   const [showAirlines, setShowAirlines] = useState(false);
+  const airlineRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (airlineRef.current && !airlineRef.current.contains(event.target as Node)) {
+        setShowAirlines(false);
+      }
+    };
+
+    if (showAirlines) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showAirlines]);
 
   const handleAirportChange = (type: 'from' | 'to', code: string) => {
     const airport = AIRPORTS.find(a => a.code === code);
@@ -45,7 +62,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
       {/* Main Inputs Grid */}
       <div className="flex items-center gap-4 mb-6">
         {/* Airline Name */}
-        <div className="flex-1 border border-gray-200 rounded-lg p-3 hover:border-rose-300 transition-colors bg-white cursor-pointer relative"
+        <div ref={airlineRef} className="flex-1 border border-gray-200 rounded-lg p-3 hover:border-rose-300 transition-colors bg-white cursor-pointer relative"
              onClick={() => setShowAirlines(!showAirlines)}>
           <label className="block text-xs text-gray-400 uppercase font-semibold mb-1">Airline Name</label>
           <div className="font-bold text-gray-800 text-lg">

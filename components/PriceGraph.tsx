@@ -226,7 +226,7 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
                   tick={{ fontSize: 11, fill: '#6b7280' }}
                   tickFormatter={(value) => `৳${(value/1000).toFixed(0)}k`}
               />
-              <Tooltip content={<CustomTooltip />} cursor={false} />
+              <Tooltip content={<CustomTooltip />} cursor={{ stroke: '#9ca3af', strokeWidth: 1 }} />
               <Legend 
                 wrapperStyle={{ fontSize: '13px', paddingTop: '10px', position: 'relative', top: '-20px' }} 
                 iconType="line" 
