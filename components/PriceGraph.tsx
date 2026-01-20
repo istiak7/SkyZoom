@@ -111,7 +111,7 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
   if (!flights || flights.length === 0) return null;
 
   try {
-    const timeMap = new Map<string, any>();
+    const dateGroups = new Map<string, any[]>();
     
     flights.forEach(flight => {
       const depTime = flight.departureTime;
@@ -130,18 +130,23 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
       const date = `${monthName} ${parseInt(day)}, ${year}`;
       const timestamp = new Date(depTime).getTime();
       const key = `${datePart}-${timePart}`;
+      const airlineName = flight.airline.name;
       
-      if (!timeMap.has(key)) {
-        timeMap.set(key, {
+      if (!dateGroups.has(datePart)) {
+        dateGroups.set(datePart, []);
+      }
+      
+      let point = dateGroups.get(datePart)!.find(p => p.key === key);
+      if (!point) {
+        point = {
+          key,
           timestamp,
           formattedDate: date,
           formattedTime: time,
           flights: {}
-        });
+        };
+        dateGroups.get(datePart)!.push(point);
       }
-      
-      const point = timeMap.get(key);
-      const airlineName = flight.airline.name;
       
       if (!point.flights[airlineName]) {
         point.flights[airlineName] = [];
@@ -157,7 +162,22 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
       point[airlineName] = minPrice;
     });
     
-    const chartData = Array.from(timeMap.values()).sort((a, b) => a.timestamp - b.timestamp);
+    const chartData: any[] = [];
+    let xPosition = 0;
+    
+    Array.from(dateGroups.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([date, points]) => {
+      points.sort((a, b) => a.timestamp - b.timestamp);
+      const spacing = 100 / (points.length + 1);
+      
+      points.forEach((point, idx) => {
+        chartData.push({
+          ...point,
+          xPosition: xPosition + spacing * (idx + 1)
+        });
+      });
+      
+      xPosition += 100;
+    });
     const airlines = [...new Set(flights.map(f => f.airline.name))];
     const allPrices = flights.map(f => f.price);
     const minPrice = Math.floor(Math.min(...allPrices) / 1000) * 1000;
@@ -177,33 +197,25 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
             <LineChart data={chartData} margin={{ top: 10, right: 30, bottom: 80, left: 20 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
               <XAxis 
-                  dataKey="timestamp"
+                  dataKey="xPosition"
                   type="number"
-                  scale="time"
-                  domain={['dataMin', 'dataMax']}
-                  ticks={chartData.map(d => d.timestamp)}
-                  tickFormatter={(timestamp) => {
-                    const d = new Date(timestamp);
-                    const hour = d.getHours();
-                    const minute = d.getMinutes();
-                    const ampm = hour >= 12 ? 'PM' : 'AM';
-                    const hour12 = hour % 12 || 12;
-                    return `${hour12}:${minute.toString().padStart(2, '0')} ${ampm}`;
+                  domain={[0, 'dataMax']}
+                  ticks={chartData.map(d => d.xPosition)}
+                  tickFormatter={(xPos) => {
+                    const point = chartData.find(d => d.xPosition === xPos);
+                    return point ? point.formattedTime : '';
                   }}
                   tick={{ fontSize: 12, fill: '#111827', fontWeight: 600 }}
                   height={70}
-                  minTickGap={50}
               />
               <XAxis 
-                  dataKey="timestamp"
+                  dataKey="xPosition"
                   type="number"
-                  scale="time"
-                  domain={['dataMin', 'dataMax']}
-                  ticks={chartData.map(d => d.timestamp)}
-                  tickFormatter={(timestamp) => {
-                    const d = new Date(timestamp);
-                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
-                    return `${monthNames[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+                  domain={[0, 'dataMax']}
+                  ticks={chartData.map(d => d.xPosition)}
+                  tickFormatter={(xPos) => {
+                    const point = chartData.find(d => d.xPosition === xPos);
+                    return point ? point.formattedDate : '';
                   }}
                   axisLine={false}
                   tickLine={false}
@@ -211,7 +223,6 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
                   xAxisId="date"
                   height={70}
                   dy={35}
-                  minTickGap={50}
               />
               <YAxis 
                   domain={[minPrice, maxPrice]} 
