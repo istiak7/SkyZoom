@@ -184,7 +184,7 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 mb-8 focus:outline-none" tabIndex={-1}>
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-lg font-bold text-gray-800">Price Trend by Airline</h3>
+            <h3 className="text-lg font-bold text-gray-800">Cheap Flight Comparison</h3>
             <p className="text-sm text-gray-500">Compare ticket prices across different airlines over time</p>
           </div>
         </div>
