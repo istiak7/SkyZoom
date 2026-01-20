@@ -30,7 +30,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const pointData = payload[0].payload;
     
-    const allFlights: Array<{ airlineName: string; color: string; price: number }> = [];
+    const allFlights: Array<{ airlineName: string; color: string; price: number; flightNumber: string }> = [];
     
     payload.forEach((entry: any) => {
       const airlineName = entry.name;
@@ -39,7 +39,7 @@ const CustomTooltip = ({ active, payload }: any) => {
       
       if (flights && flights.length > 0) {
         flights.forEach((f: any) => {
-          allFlights.push({ airlineName, color, price: f.price });
+          allFlights.push({ airlineName, color, price: f.price, flightNumber: f.flightNumber });
         });
       }
     });
@@ -76,7 +76,7 @@ const CustomTooltip = ({ active, payload }: any) => {
           </div>
         </div>
         
-        <div className="p-3 space-y-3 max-h-[400px] overflow-y-auto">
+        <div className="p-3 space-y-3 max-h-[400px] overflow-y-auto pointer-events-auto">
           {Array.from(new Set(allFlights.map(f => f.airlineName))).map((airlineName, idx) => {
             const airlineFlights = allFlights.filter(f => f.airlineName === airlineName);
             const color = airlineFlights[0].color;
@@ -91,8 +91,9 @@ const CustomTooltip = ({ active, payload }: any) => {
                 </div>
                 <div className="space-y-1 pl-5">
                   {airlineFlights.map((item, i) => (
-                    <div key={i} className="flex justify-between items-center text-sm">
-                      <span className="font-bold text-gray-900">BDT {item.price.toLocaleString()}</span>
+                    <div key={i} className="text-sm flex">
+                      <span className="text-gray-500">{item.flightNumber}</span>
+                      <span className="font-bold text-gray-900 ml-4">BDT {item.price.toLocaleString()}</span>
                     </div>
                   ))}
                 </div>
@@ -148,10 +149,12 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
       
       point.flights[airlineName].push({
         time,
-        price: flight.price
+        price: flight.price,
+        flightNumber: flight.flightNumber
       });
       
-      point[airlineName] = flight.price;
+      const minPrice = Math.min(...point.flights[airlineName].map((f: any) => f.price));
+      point[airlineName] = minPrice;
     });
     
     const chartData = Array.from(timeMap.values()).sort((a, b) => a.timestamp - b.timestamp);
