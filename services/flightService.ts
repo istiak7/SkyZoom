@@ -27,8 +27,8 @@ const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
     const mappedFlights = data.map((flight: any, index: number) => {
       console.log('Raw API flight data:', flight);
       const depDate = flight.departureDate;
-      const depTime = flight.departureTime.split(' ')[1];
-      const schTime = flight.scheduleTime.split(' ')[1];
+      const depTime = flight.departureTime;
+      const schTime = flight.scheduleTime;
       
       const departureDateTime = `${depDate}T${depTime}:00`;
       console.log('Constructed departureDateTime:', departureDateTime);

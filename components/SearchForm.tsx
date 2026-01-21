@@ -95,7 +95,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
             value={params.from.code}
             onChange={(e) => handleAirportChange('from', e.target.value)}
           >
-            {AIRPORTS.map(a => <option key={a.code} value={a.code}>{a.city}</option>)}
+            {AIRPORTS.map(a => <option key={a.code} value={a.code}>{a.city} ({a.code})</option>)}
           </select>
           <p className="text-xs text-gray-500 truncate">{params.from.code}, {params.from.name}</p>
         </div>
@@ -118,7 +118,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
             value={params.to.code}
             onChange={(e) => handleAirportChange('to', e.target.value)}
           >
-            {AIRPORTS.map(a => <option key={a.code} value={a.code}>{a.city}</option>)}
+            {AIRPORTS.map(a => <option key={a.code} value={a.code}>{a.city} ({a.code})</option>)}
           </select>
           <p className="text-xs text-gray-500 truncate">{params.to.code}, {params.to.name}</p>
         </div>

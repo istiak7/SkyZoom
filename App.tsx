@@ -10,8 +10,8 @@ import { AIRPORTS } from './constants';
 // Default initial state for the form
 const initialSearchParams: SearchParams = {
   airlines: [],
-  from: AIRPORTS[0], // Dhaka
-  to: AIRPORTS[1],   // Cox's Bazar
+  from: AIRPORTS[0], // Dhaka (DAC)
+  to: AIRPORTS[1],   // Jeddah (JED)
   startDate: new Date().toISOString().split('T')[0],
   endDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
   tripType: 'one-way',

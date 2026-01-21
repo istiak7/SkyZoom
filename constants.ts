@@ -2,13 +2,25 @@ import { Airline, Airport } from './types';
 
 export const AIRPORTS: Airport[] = [
   { code: 'DAC', city: 'Dhaka', name: 'Hazrat Shahjalal Intl' },
-  { code: 'CXB', city: "Cox's Bazar", name: 'Cox\'s Bazar Airport' },
-  { code: 'JFK', city: 'New York', name: 'John F. Kennedy Intl' },
-  { code: 'LHR', city: 'London', name: 'Heathrow Airport' },
+  { code: 'JED', city: 'Jeddah', name: 'King Abdulaziz Intl' },
   { code: 'DXB', city: 'Dubai', name: 'Dubai Intl' },
+  { code: 'MCT', city: 'Muscat', name: 'Muscat Intl' },
+  { code: 'DOH', city: 'Doha', name: 'Hamad Intl' },
   { code: 'SIN', city: 'Singapore', name: 'Changi Airport' },
+  { code: 'MLE', city: 'Male', name: 'Velana Intl' },
   { code: 'BKK', city: 'Bangkok', name: 'Suvarnabhumi Airport' },
-  {code:'DOH', city:'Doha', name:'Hamad Intl' }
+  { code: 'KUL', city: 'Kuala Lumpur', name: 'Kuala Lumpur Intl' },
+  { code: 'CAN', city: 'Guangzhou', name: 'Guangzhou Baiyun Intl' },
+  { code: 'SHJ', city: 'Sharjah', name: 'Sharjah Intl' },
+  { code: 'CCU', city: 'Kolkata', name: 'Netaji Subhas Chandra Bose Intl' },
+  { code: 'MAA', city: 'Chennai', name: 'Chennai Intl' },
+  { code: 'CXB', city: "Cox's Bazar", name: 'Cox\'s Bazar Airport' },
+  { code: 'CGP', city: 'Chittagong', name: 'Shah Amanat Intl' },
+  { code: 'ZYL', city: 'Sylhet', name: 'Osmani Intl' },
+  { code: 'RJH', city: 'Rajshahi', name: 'Shah Makhdum Airport' },
+  { code: 'SPD', city: 'Saidpur', name: 'Saidpur Airport' },
+  { code: 'BZL', city: 'Barisal', name: 'Barisal Airport' },
+  { code: 'JSR', city: 'Jashore', name: 'Jashore Airport' },
 ];
 
 export const AIRLINES: Airline[] = [
