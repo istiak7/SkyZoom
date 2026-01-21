@@ -32,6 +32,7 @@ const FlightList: React.FC<FlightListProps> = ({ flights, loading }) => {
       
       {flights.map(flight => (
         <div key={flight.id} className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+          
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             {/* Departure Date & Time */}
             <div className="flex items-center gap-2">

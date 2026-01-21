@@ -49,17 +49,31 @@ const CustomTooltip = ({ active, payload }: any) => {
     allFlights.sort((a, b) => a.price - b.price);
     
     if (allFlights.length === 1) {
-      const { airlineName, price, color } = allFlights[0];
+      const { airlineName, price, color, flightNumber } = allFlights[0];
       return (
-        <div className="bg-white rounded-xl shadow-xl border border-gray-100 p-4 min-w-[220px]">
-          <div className="text-gray-500 text-xs font-semibold mb-2">
-            {pointData.formattedDate} {pointData.formattedTime}
+        <div className="bg-white rounded-xl shadow-xl border border-gray-100 min-w-[280px] overflow-hidden">
+          <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
+            <div className="text-gray-900 font-bold text-sm">
+              {pointData.formattedDate}
+            </div>
+            <div className="text-xs font-bold text-gray-500 bg-white px-2 py-1 rounded border border-gray-200">
+              {pointData.formattedTime}
+            </div>
           </div>
-          <div className="text-gray-900 font-bold text-base mb-2" style={{ color }}>
-            {airlineName}
-          </div>
-          <div className="text-2xl font-extrabold text-gray-900">
-            BDT {price.toLocaleString()}
+          
+          <div className="p-3 space-y-3">
+            <div>
+              <div className="flex items-center gap-2 mb-2">
+                <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                <span className="text-sm font-bold text-gray-700">
+                  {airlineName}
+                </span>
+              </div>
+              <div className="pl-5 text-sm flex">
+                <span className="text-gray-500">{flightNumber}</span>
+                <span className="font-bold text-gray-900 ml-4">BDT {price.toLocaleString()}</span>
+              </div>
+            </div>
           </div>
         </div>
       );

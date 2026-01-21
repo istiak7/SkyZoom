@@ -43,8 +43,23 @@ const App: React.FC = () => {
     }
   };
 
-  // Sort flights based on current sortOrder
-  const sortedFlights = [...flights].sort((a, b) => a.price - b.price);
+  // Filter to show only minimum price flights per date/time/airline combination (like graph)
+  const getMinimumPriceFlights = (flights: Flight[]): Flight[] => {
+    const grouped = new Map<string, Flight>();
+    
+    flights.forEach(flight => {
+      const key = `${flight.departureTime}-${flight.airline.name}`;
+      const existing = grouped.get(key);
+      
+      if (!existing || flight.price < existing.price) {
+        grouped.set(key, flight);
+      }
+    });
+    
+    return Array.from(grouped.values()).sort((a, b) => a.price - b.price);
+  };
+
+  const displayFlights = getMinimumPriceFlights(flights);
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -72,11 +87,11 @@ const App: React.FC = () => {
 
         {/* Results Section */}
         <div className="mt-8">
-            {searched && !loading && sortedFlights.length > 0 && (
-                <PriceGraph flights={sortedFlights} />
+            {searched && !loading && displayFlights.length > 0 && (
+                <PriceGraph flights={displayFlights} />
             )}
             
-            <FlightList flights={sortedFlights} loading={loading} />
+            <FlightList flights={displayFlights} loading={loading} />
         </div>
       </main>
 
