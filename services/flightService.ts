@@ -46,7 +46,8 @@ const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
         destination: params.to.code,
         price: flight.totalFare,
         stops: 0,
-        duration: calculateDuration(depTime, schTime)
+        duration: calculateDuration(depTime, schTime),
+        loadFactor: flight.loadF ?? 0
       };
       console.log('Mapped flight:', mapped);
       return mapped;

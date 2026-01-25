@@ -20,6 +20,7 @@ export interface Flight {
   price: number;
   stops: number;
   duration: string;
+  loadFactor: number;
 }
 
 export interface SearchParams {

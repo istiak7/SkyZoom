@@ -30,7 +30,7 @@ const CustomTooltip = ({ active, payload }: any) => {
   if (active && payload && payload.length) {
     const pointData = payload[0].payload;
     
-    const allFlights: Array<{ airlineName: string; color: string; price: number; flightNumber: string }> = [];
+        const allFlights: Array<{ airlineName: string; color: string; price: number; flightNumber: string; loadFactor: number }> = [];
     
     payload.forEach((entry: any) => {
       const airlineName = entry.name;
@@ -39,7 +39,7 @@ const CustomTooltip = ({ active, payload }: any) => {
       
       if (flights && flights.length > 0) {
         flights.forEach((f: any) => {
-          allFlights.push({ airlineName, color, price: f.price, flightNumber: f.flightNumber });
+          allFlights.push({ airlineName, color, price: f.price, flightNumber: f.flightNumber, loadFactor: f.loadFactor });
         });
       }
     });
@@ -48,8 +48,8 @@ const CustomTooltip = ({ active, payload }: any) => {
     
     allFlights.sort((a, b) => a.price - b.price);
     
-    if (allFlights.length === 1) {
-      const { airlineName, price, color, flightNumber } = allFlights[0];
+        if (allFlights.length === 1) {
+      const { airlineName, price, color, flightNumber, loadFactor } = allFlights[0];
       return (
         <div className="bg-white rounded-xl shadow-xl border border-gray-100 min-w-[280px] overflow-hidden">
           <div className="bg-gray-50 px-4 py-3 border-b border-gray-100 flex justify-between items-center">
@@ -69,9 +69,12 @@ const CustomTooltip = ({ active, payload }: any) => {
                   {airlineName}
                 </span>
               </div>
-              <div className="pl-5 text-sm flex">
-                <span className="text-gray-500">{flightNumber}</span>
-                <span className="font-bold text-gray-900 ml-4">BDT {price.toLocaleString()}</span>
+              <div className="pl-5 text-sm flex justify-between">
+                <div>
+                  <span className="text-gray-500">{flightNumber}</span>
+                  <span className="font-bold text-gray-900 ml-4">BDT {price.toLocaleString()}</span>
+                </div>
+                <span className="text-gray-500 text-right">LoadF {loadFactor.toFixed(2)}</span>
               </div>
             </div>
           </div>
@@ -104,9 +107,12 @@ const CustomTooltip = ({ active, payload }: any) => {
                     {airlineName}
                   </span>
                 </div>
-                <div className="pl-5 text-sm flex">
-                  <span className="text-gray-500">{minFlight.flightNumber}</span>
-                  <span className="font-bold text-gray-900 ml-4">BDT {minFlight.price.toLocaleString()}</span>
+                <div className="pl-5 text-sm flex justify-between">
+                  <div>
+                    <span className="text-gray-500">{minFlight.flightNumber}</span>
+                    <span className="font-bold text-gray-900 ml-4">BDT {minFlight.price.toLocaleString()}</span>
+                  </div>
+                  <span className="text-gray-500 text-right">Loadfactor -- {minFlight.loadFactor.toFixed(2)}</span>
                 </div>
               </div>
             );
@@ -166,7 +172,8 @@ const PriceGraph: React.FC<PriceGraphProps> = ({ flights }) => {
       point.flights[airlineName].push({
         time,
         price: flight.price,
-        flightNumber: flight.flightNumber
+        flightNumber: flight.flightNumber,
+        loadFactor: flight.loadFactor
       });
       
       const minPrice = Math.min(...point.flights[airlineName].map((f: any) => f.price));
