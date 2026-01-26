@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SearchParams, Airport } from '../types';
-import { AIRPORTS, AIRLINE_OPTIONS } from '../constants';
+import { AIRLINE_OPTIONS } from '../constants';
+import { routeService } from '../services/routeService';
 
 interface SearchFormProps {
   onSearch: (params: SearchParams) => void;
@@ -10,7 +11,24 @@ interface SearchFormProps {
 const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
   const [params, setParams] = useState<SearchParams>(initialParams);
   const [showAirlines, setShowAirlines] = useState(false);
+  const [airports, setAirports] = useState<Airport[]>([]);
   const airlineRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    loadAirports();
+  }, []);
+
+  const loadAirports = async () => {
+    try {
+      const data = await routeService.getUniqueAirports();
+      setAirports(data);
+      if (data.length > 0 && !params.from.code) {
+        setParams(prev => ({ ...prev, from: data[0], to: data[1] || data[0] }));
+      }
+    } catch (error) {
+      console.error('Failed to load airports:', error);
+    }
+  };
 
   React.useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -29,7 +47,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
   }, [showAirlines]);
 
   const handleAirportChange = (type: 'from' | 'to', code: string) => {
-    const airport = AIRPORTS.find(a => a.code === code);
+    const airport = airports.find(a => a.code === code);
     if (airport) {
       setParams(prev => ({ ...prev, [type]: airport }));
     }
@@ -57,7 +75,7 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl p-6 relative -mt-24 mb-8 z-20 mx-4 lg:mx-auto max-w-6xl border border-gray-100">
+    <div className="bg-white rounded-2xl shadow-xl p-6 relative mb-8 z-20 mx-4 lg:mx-auto max-w-6xl border border-gray-100" style={{ marginTop: '-8rem' }}>
       
       {/* Main Inputs Grid */}
       <div className="flex items-center gap-4 mb-6">
@@ -92,12 +110,16 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
           <label className="block text-xs text-gray-400 uppercase font-semibold mb-1">From</label>
           <select 
             className="w-full font-bold text-gray-800 outline-none bg-transparent appearance-none cursor-pointer text-lg"
+            style={{
+              borderRadius: '0.75rem',
+              padding: '0.25rem'
+            }}
             value={params.from.code}
             onChange={(e) => handleAirportChange('from', e.target.value)}
           >
-            {AIRPORTS.map(a => <option key={a.code} value={a.code}>{a.city} ({a.code})</option>)}
+            {airports.map(a => <option key={a.code} value={a.code} style={{ borderRadius: '0.5rem', padding: '0.5rem', color: '#4b5563' }}>{a.code}</option>)}
           </select>
-          <p className="text-xs text-gray-500 truncate">{params.from.code}, {params.from.name}</p>
+          <p className="text-xs text-gray-500 truncate">{params.from.code}</p>
         </div>
 
         {/* Swap Button */}
@@ -115,12 +137,16 @@ const SearchForm: React.FC<SearchFormProps> = ({ onSearch, initialParams }) => {
           <label className="block text-xs text-gray-400 uppercase font-semibold mb-1">To</label>
           <select 
             className="w-full font-bold text-gray-800 outline-none bg-transparent appearance-none cursor-pointer text-lg"
+            style={{
+              borderRadius: '0.75rem',
+              padding: '0.25rem'
+            }}
             value={params.to.code}
             onChange={(e) => handleAirportChange('to', e.target.value)}
           >
-            {AIRPORTS.map(a => <option key={a.code} value={a.code}>{a.city} ({a.code})</option>)}
+            {airports.map(a => <option key={a.code} value={a.code} style={{ borderRadius: '0.5rem', padding: '0.5rem', color: '#4b5563' }}>{a.code}</option>)}
           </select>
-          <p className="text-xs text-gray-500 truncate">{params.to.code}, {params.to.name}</p>
+          <p className="text-xs text-gray-500 truncate">{params.to.code}</p>
         </div>
 
         {/* Start Date */}
