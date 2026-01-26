@@ -39,3 +39,11 @@ export interface PricePoint {
   price: number;
   airline: string;
 }
+
+export interface UserResponse {
+  id: number;
+  username: string;
+  email: string;
+  accessToken: string;
+  refreshToken: string;
+}

@@ -1,4 +1,5 @@
 import { apiClient } from './apiClient';
+import { authService } from './authService';
 
 export interface RouteDefinition {
   id: number;
@@ -12,7 +13,9 @@ export interface RouteDefinition {
 }
 
 const getAllRoutes = async (): Promise<RouteDefinition[]> => {
-  const { data } = await apiClient.get('/Routes');
+  const { data } = await apiClient.get('/Routes', {
+    headers: authService.getAuthHeader()
+  });
   return data;
 };
 
@@ -26,12 +29,16 @@ const searchRoutes = async (origin?: string, destination?: string): Promise<Rout
 };
 
 const createRoute = async (origin: string, destination: string): Promise<RouteDefinition> => {
-  const { data } = await apiClient.post('/Routes', { origin, destination });
+  const { data } = await apiClient.post('/Routes', { origin, destination }, {
+    headers: authService.getAuthHeader()
+  });
   return data;
 };
 
 const updateRoute = async (id: number, origin: string, destination: string): Promise<RouteDefinition> => {
-  const { data } = await apiClient.put(`/Routes/${id}`, { origin, destination });
+  const { data } = await apiClient.put(`/Routes/${id}`, { origin, destination }, {
+    headers: authService.getAuthHeader()
+  });
   return data;
 };
 
@@ -54,7 +61,9 @@ const getUniqueAirports = async (): Promise<{ code: string; city: string; name: 
 };
 
 const deleteRoute = async (id: number): Promise<boolean> => {
-  await apiClient.delete(`/Routes/${id}`);
+  await apiClient.delete(`/Routes/${id}`, {
+    headers: authService.getAuthHeader()
+  });
   return true;
 };
 

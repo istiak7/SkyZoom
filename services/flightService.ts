@@ -1,6 +1,7 @@
 import { Flight, SearchParams } from '../types';
 import { apiClient } from './apiClient';
 import { AIRLINE_OPTIONS } from '../constants';
+import { authService } from './authService';
 
 const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
   try {
@@ -15,6 +16,8 @@ const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
       destination: params.to.code,
       startDate: params.startDate,
       endDate: params.endDate
+    }, {
+      headers: authService.getAuthHeader()
     });
 
     console.log('API Response:', data);
@@ -47,7 +50,7 @@ const searchFlights = async (params: SearchParams): Promise<Flight[]> => {
         price: flight.totalFare,
         stops: 0,
         duration: calculateDuration(depTime, schTime),
-        loadFactor: flight.loadF ?? 0
+        loadFactor: flight.loadFactor ?? 0
       };
       console.log('Mapped flight:', mapped);
       return mapped;

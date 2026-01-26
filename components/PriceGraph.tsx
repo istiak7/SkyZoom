@@ -52,7 +52,7 @@ const CustomTooltip = ({ active, payload }: any) => {
               <span className="text-gray-500">{data.flightNumber}</span>
               <span className="font-bold text-gray-900 ml-4">BDT {data.y.toLocaleString()}</span>
             </div>
-            <span className="text-gray-500 text-right">LoadF {data.loadFactor.toFixed(2)}</span>
+            <span className="text-gray-500 text-right">LF {data.loadFactor.toFixed(2)}</span>
           </div>
         </div>
       </div>

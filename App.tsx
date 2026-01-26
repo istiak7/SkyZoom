@@ -1,23 +1,63 @@
 import React, { useState, useEffect } from 'react';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import SearchForm from './components/SearchForm';
 import FlightList from './components/FlightList';
 import PriceGraph from './components/PriceGraph';
 import { RoutesConfig } from './components/RoutesConfig';
+import { Login } from './components/Login';
 import { flightService } from './services/flightService';
 import { routeService } from './services/routeService';
-import { SearchParams, Flight, Airport } from './types';
+import { SearchParams, Flight, Airport, UserResponse } from './types';
 
 const App: React.FC = () => {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [isAuthChecking, setIsAuthChecking] = useState(true);
   const [flights, setFlights] = useState<Flight[]>([]);
   const [loading, setLoading] = useState(false);
   const [searched, setSearched] = useState(false);
   const [showRoutingConfig, setShowRoutingConfig] = useState(false);
+
+  useEffect(() => {
+    setShowRoutingConfig(location.pathname === '/routing-config');
+  }, [location]);
   const [initialParams, setInitialParams] = useState<SearchParams | null>(null);
 
   useEffect(() => {
-    loadInitialData();
+    const storedUser = localStorage.getItem('skyzoom_user');
+    if (storedUser) {
+      try {
+        setUser(JSON.parse(storedUser));
+      } catch (e) {
+        localStorage.removeItem('skyzoom_user');
+      }
+    }
+    setIsAuthChecking(false);
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      loadInitialData();
+    }
+  }, [user]);
+
+  const handleLoginSuccess = (loggedInUser: UserResponse) => {
+    setUser(loggedInUser);
+    localStorage.setItem('skyzoom_user', JSON.stringify(loggedInUser));
+    navigate('/');
+  };
+
+  const handleLogout = () => {
+    setUser(null);
+    localStorage.removeItem('skyzoom_user');
+    localStorage.removeItem('skyzoom_token');
+    localStorage.removeItem('skyzoom_refresh');
+    setFlights([]);
+    setSearched(false);
+    navigate('/login');
+  };
 
   const loadInitialData = async () => {
     try {
@@ -73,6 +113,23 @@ const App: React.FC = () => {
 
   const displayFlights = getMinimumPriceFlights(flights);
 
+  if (isAuthChecking) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-gray-500">Loading...</div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <Routes>
+        <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    );
+  }
+
   if (!initialParams) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -84,7 +141,7 @@ const App: React.FC = () => {
   if (showRoutingConfig) {
     return (
       <div className="min-h-screen bg-gray-50 flex flex-col">
-        <Navbar onMenuClick={() => setShowRoutingConfig(false)} showRoutingConfig={true} />
+        <Navbar onMenuClick={() => navigate('/')} showRoutingConfig={true} user={user} onLogout={handleLogout} />
         <main className="flex-1 w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-24 pb-20">
           <RoutesConfig />
         </main>
@@ -94,7 +151,7 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      <Navbar onMenuClick={() => setShowRoutingConfig(true)} showRoutingConfig={false} />
+      <Navbar onMenuClick={() => navigate('/routing-config')} showRoutingConfig={false} user={user} onLogout={handleLogout} />
 
       {/* Hero Section - Reduced height */}
       <div className="relative h-[400px] w-full bg-gray-900 overflow-hidden">

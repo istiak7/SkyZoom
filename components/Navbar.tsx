@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
-import { Menu, Settings, Home } from 'lucide-react';
+import { Menu, Settings, Home, LogOut, Plane } from 'lucide-react';
 
 interface NavbarProps {
   onMenuClick: () => void;
   showRoutingConfig: boolean;
+  user: any;
+  onLogout: () => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ onMenuClick, showRoutingConfig }) => {
+const Navbar: React.FC<NavbarProps> = ({ onMenuClick, showRoutingConfig, user, onLogout }) => {
   const [showMenu, setShowMenu] = useState(false);
   const menuTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
 
@@ -45,7 +47,7 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick, showRoutingConfig }) => {
   return (
     <nav className="w-full bg-white/90 backdrop-blur-md shadow-sm fixed top-0 z-50">
       <div className="w-full px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center h-16">
+        <div className="flex items-center justify-between h-16">
           <div className="flex items-center gap-4">
             <div className="relative"
                  onMouseEnter={handleMouseEnter}
@@ -70,15 +72,25 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick, showRoutingConfig }) => {
                 </div>
               )}
             </div>
-            <div className="flex items-center gap-2 cursor-pointer" onClick={handleLogoClick}>
-              <div className="w-8 h-8 bg-rose-600 rounded-lg flex items-center justify-center transform rotate-3">
-                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
+            <div className="flex items-center gap-3 cursor-pointer" onClick={handleLogoClick}>
+              <div className="bg-pink-600 p-2 rounded-lg shadow-lg">
+                <Plane className="text-white" size={20} />
               </div>
-              <span className="font-bold text-xl text-gray-800 tracking-tight">FareComparison</span>
+              <div>
+                <span className="font-bold text-xl text-gray-800">SkyZoom</span>
+                <div className="text-xs text-gray-500">Welcome, {user?.username || 'User'}</div>
+              </div>
             </div>
           </div>
+          
+          <button
+            onClick={onLogout}
+            className="flex items-center gap-2 px-4 py-2 bg-white border border-gray-200 text-gray-600 rounded-lg hover:bg-gray-50 hover:text-red-600 transition-colors shadow-sm font-medium"
+            title="Logout"
+          >
+            <LogOut size={18} />
+            <span className="hidden sm:inline">Logout</span>
+          </button>
         </div>
       </div>
     </nav>
